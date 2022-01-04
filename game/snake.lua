@@ -1,61 +1,76 @@
-Snake = {
-    Position = {}, -- front - back
-    Direction = "left",
-    Speed = 5,
-    Scale = 1,
-    Grow = 0
-}
+require("globals")
 
-FrameCount = 1
-function UpdateSnake(dt)
+function UpdateSnake(Snake)
     -- Move Snake
     local newPosition = {}
-    if FrameCount % (100 / Snake.Speed) == 0 then
+    if Snake.FrameCount % (100 / Snake.Speed) == 0 then
         -- Update tail
         local newTail = nil
         if (Snake.Grow > 0) then
             newTail = Snake.Position[#Snake.Position]
             Snake.Grow = Snake.Grow - 1
         end
-        for i = #Snake.Position, 2, -1 do
+        for i = #(Snake.Position), 2, -1 do
             newPosition[i] = Snake.Position[i - 1]
         end
         if newTail ~= nil then
             table.insert(newPosition, newTail)
         end
         -- Update head
-        newPosition[1] = {(Snake.Position[1][1] + Directions[Snake.Direction][1]) % Game.XCells,
-                          (Snake.Position[1][2] + Directions[Snake.Direction][2]) % Game.YCells}
+        newPosition[1] = {(Snake.Position[1][1] + Directions[Snake.Direction][1]) % Board.XCells,
+                          (Snake.Position[1][2] + Directions[Snake.Direction][2]) % Board.YCells}
 
         Snake.Position = newPosition
     end
 
-    FrameCount = FrameCount + 1
+    Snake.FrameCount = Snake.FrameCount + 1
+    return Snake
 end
 
-function GrowSnake()
+function GrowSnake(Snake)
     Snake.Grow = Snake.Grow + 1
-    Game.Score = Game.Score + 1
+    Snake.Score = Snake.Score + 1
+    return Snake
 end
 
-local function initPosition(length, axis)
-    local head = {Game.XCells / 2, Game.YCells / 2}
-    table.insert(Snake.Position, head)
+local function initPosition(Snake, length)
+    local newPosition = {}
+    local head = {Board.XCells / 2, Board.YCells / 2}
+    table.insert(newPosition, head)
 
     for i = 1, length do
         local point = {0, 0}
-        if axis % 2 == 0 then
-            point[1] = (Snake.Position[#Snake.Position][1] + 1) % Game.XCells
-            point[2] = Snake.Position[#Snake.Position][2]
+        point[1] = (newPosition[#newPosition][1] + 1) % Board.XCells
+        point[2] = newPosition[#newPosition][2]
 
-        else
-            point[1] = Snake.Position[#Snake.Position][1]
-            point[2] = (Snake.Position[#Snake.Position][2] + 1) % Game.YCells
-        end
-        table.insert(Snake.Position, point)
+        table.insert(newPosition, point)
     end
+    Snake.Position = newPosition
+
+    return Snake
 end
 
 function InitSnake()
-    initPosition(5, 0)
+    Snake = {
+        Position = {}, -- front - back
+        Direction = "left",
+        Speed = 5,
+        Scale = 1,
+        Grow = 0,
+        FrameCount = 1,
+        Score = 0
+    }
+    Snake = initPosition(Snake, 5)
+
+    return Snake
+end
+
+function DrawSnake(Snake)
+    love.graphics.setColor(0, 255, 0, 255)
+    for k, v in pairs(Snake.Position) do
+        local x = v[1] * Screen.CellSize + (Screen.Mid[1] - Screen.Width / 2)
+        local y = v[2] * Screen.CellSize + (Screen.Mid[2] - Screen.Height / 2)
+        love.graphics.polygon("fill", {x, y, x + Screen.CellSize, y, x + Screen.CellSize, y + Screen.CellSize, x,
+                                       y + Screen.CellSize})
+    end
 end
