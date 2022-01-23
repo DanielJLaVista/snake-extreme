@@ -8,7 +8,7 @@ DefaultGame = {
 Game = DefaultGame
 
 function Update(dt)
-    Game.Snakes[1] = UpdateSnake(Game.Snakes[1])
+    Game.Snakes[1]:update()
     CheckCollision(Game.Snakes[1])
 end
 
@@ -16,7 +16,7 @@ function CheckCollision(Snake)
     -- Check Collision
     for k, v in pairs(Game.Food) do
         if (Snake.Position[1][1] == v[1] and Snake.Position[1][2] == v[2]) then
-            Game.Snakes[1] = GrowSnake(Game.Snakes[1])
+            Game.Snakes[1]:growSnake()
             MakeFood(k)
         end
     end
@@ -30,7 +30,7 @@ end
 function Reset()
 
     Game = DefaultGame
-    table.insert(Game.Snakes, InitSnake())
+    table.insert(Game.Snakes, Snake:new())
     for i = 1, 10 do
         MakeFood(nil)
     end
@@ -46,7 +46,7 @@ function MakeFood(idx)
 end
 
 function DrawGame()
-    DrawSnake(Game.Snakes[1])
+    Game.Snakes[1]:drawSnake()
 
     -- Draw food
     love.graphics.setColor(255, 0, 0, 255)
